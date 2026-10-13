@@ -26,7 +26,7 @@ export function UploadScreen({ message, onChoose, fileInput, onFile }: Props) {
         <h1>
           Edit & fill PDFs
           <br />
-          <em>effortlessly.</em>
+          <em>effortlessly. v2.0</em>
         </h1>
         <p className="lede">
           Add crisp text, signatures, and interactive form fields directly in
@@ -93,4 +93,3 @@ export function AppHeader() {
     </header>
   );
 }
-
