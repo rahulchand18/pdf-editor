@@ -15,12 +15,15 @@ type PendingSignature = {
   text?: string;
 } | null;
 
+import type { PageSize } from "../editorTypes";
+
 type Props = {
   pages: number[];
   items: EditorItem[];
   selectedId: number | null;
   editingId: number | null;
   zoom: number;
+  pageSizes: PageSize[];
   activeTool: "select" | "text" | "signature" | "tick" | "pages";
   pendingSignature: PendingSignature;
   textSize: number;
@@ -51,6 +54,7 @@ export function PdfCanvas({
   selectedId,
   editingId,
   zoom,
+  pageSizes,
   activeTool,
   pendingSignature,
   textSize,
@@ -71,6 +75,14 @@ export function PdfCanvas({
   removeItem,
   resizeItem,
 }: Props) {
+  // Compute per-page render scale: how many screen pixels equal one PDF point.
+  // This matches the scale used by pdf-lib when drawing, so preview = export.
+  const getRenderScale = (page: number): number => {
+    const pageEl = pageRefs.current[page];
+    const pdfSize = pageSizes[page];
+    if (!pageEl || !pdfSize || pdfSize.height === 0) return zoom;
+    return pageEl.clientHeight / pdfSize.height;
+  };
   const [ghost, setGhost] = useState<{
     page: number;
     x: number;
@@ -197,7 +209,7 @@ export function PdfCanvas({
                 {activeTool === "text" && (
                   <div
                     style={{
-                      fontSize: `${textSize * zoom}px`,
+                      fontSize: `${textSize * getRenderScale(page)}px`,
                       fontWeight: textBold ? "bold" : "normal",
                       color: textColor,
                       padding: "2px 6px",
@@ -210,11 +222,11 @@ export function PdfCanvas({
                 {activeTool === "tick" && (
                   <span style={{ color: tickColor, display: "grid", placeItems: "center" }}>
                     {tickStyle === "circle" ? (
-                      <CircleCheck size={tickSize * zoom} />
+                      <CircleCheck size={tickSize * getRenderScale(page)} />
                     ) : tickStyle === "box" ? (
-                      <Square size={tickSize * zoom} />
+                      <Square size={tickSize * getRenderScale(page)} />
                     ) : (
-                      <Check size={tickSize * zoom} />
+                      <Check size={tickSize * getRenderScale(page)} />
                     )}
                   </span>
                 )}
@@ -295,12 +307,12 @@ export function PdfCanvas({
                             : item.fontFamily === "Courier New"
                               ? "monospace"
                               : item.fontFamily + ", sans-serif",
-                        fontSize: `${(item.fontSize || 16) * zoom}px`,
+                        fontSize: `${(item.fontSize || 16) * getRenderScale(item.page)}px`,
                         fontWeight: item.bold ? "bold" : "normal",
                         fontStyle: item.italic ? "italic" : "normal",
                         textDecoration: item.underline ? "underline" : "none",
                         textAlign: item.align || "left",
-                        letterSpacing: `${item.letterSpacing || 0}px`,
+                        letterSpacing: `${(item.letterSpacing || 0) * getRenderScale(item.page)}px`,
                         lineHeight: item.lineHeight || 1.2,
                         color: item.color || "#1C2331",
                       }}
@@ -325,11 +337,11 @@ export function PdfCanvas({
                       style={{ color: item.color || "#3F6B4F" }}
                     >
                       {item.tickStyle === "circle" ? (
-                        <CircleCheck size={(item.fontSize || 28) * zoom} />
+                        <CircleCheck size={(item.fontSize || 28) * getRenderScale(item.page)} />
                       ) : item.tickStyle === "box" ? (
-                        <Square size={(item.fontSize || 28) * zoom} />
+                        <Square size={(item.fontSize || 28) * getRenderScale(item.page)} />
                       ) : (
-                        <Check size={(item.fontSize || 28) * zoom} />
+                        <Check size={(item.fontSize || 28) * getRenderScale(item.page)} />
                       )}
                     </span>
                   )}

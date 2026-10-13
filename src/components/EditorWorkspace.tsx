@@ -11,6 +11,7 @@ import {
   MousePointer2,
   PenTool,
   Redo2,
+  SlidersHorizontal,
   Type,
   Undo2,
   ZoomIn,
@@ -44,6 +45,7 @@ export function EditorWorkspace() {
   const [pageSizes, setPageSizes] = useState<PageSize[]>([]);
   const [zoom, setZoom] = useState(1);
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [textBold, setTextBold] = useState(false);
   const [textSize, setTextSize] = useState(16);
   const [textColor, setTextColor] = useState("#1C2331");
@@ -315,9 +317,12 @@ export function EditorWorkspace() {
   const setTool = (tool: ActiveTool) => {
     setActiveTool(tool);
     if (tool === "select") setEditingId(null);
-    if (tool === "text") setMessage("Move cursor to page and click to place text.");
-    if (tool === "tick") setMessage("Move cursor to page and click to place tick.");
-    if (tool === "signature") setMessage("Move cursor to page and click to place signature.");
+    if (tool === "text")
+      setMessage("Move cursor to page and click to place text.");
+    if (tool === "tick")
+      setMessage("Move cursor to page and click to place tick.");
+    if (tool === "signature")
+      setMessage("Move cursor to page and click to place signature.");
   };
   const chooseSignature = () => {
     setTool("signature");
@@ -506,7 +511,7 @@ export function EditorWorkspace() {
                   </button>
                 </div>
                 <button className="done-button" onClick={downloadPdf}>
-                  <Download size={15} /> Export PDF
+                  <Download size={15} /> <span>Export</span>
                 </button>
               </div>
               <input
@@ -558,6 +563,7 @@ export function EditorWorkspace() {
                   selectedId={selectedId}
                   editingId={editingId}
                   zoom={zoom}
+                  pageSizes={pageSizes}
                   activeTool={activeTool}
                   pendingSignature={pendingSignature}
                   textSize={textSize}
@@ -603,13 +609,63 @@ export function EditorWorkspace() {
                 onSetTypedSignature={(sigText) => {
                   setPendingSignature({ type: "typed", text: sigText });
                   setActiveTool("signature");
-                  setMessage("Typed signature ready. Click anywhere on page to place.");
+                  setMessage(
+                    "Typed signature ready. Click anywhere on page to place.",
+                  );
                 }}
                 onPlaceSignature={() => setTool("signature")}
                 onDownload={downloadPdf}
                 message={message}
+                mobilePanelOpen={mobilePanelOpen}
+                onCloseMobilePanel={() => setMobilePanelOpen(false)}
               />
             </section>
+
+            {/* Mobile Bottom Tool Dock */}
+            <div className="mobile-tools">
+              <ToolButton
+                label="Select"
+                icon={<MousePointer2 size={16} />}
+                active={activeTool === "select" && !mobilePanelOpen}
+                onClick={() => {
+                  setTool("select");
+                  setMobilePanelOpen(false);
+                }}
+              />
+              <ToolButton
+                label="Text"
+                icon={<Type size={16} />}
+                active={activeTool === "text"}
+                onClick={() => {
+                  setTool("text");
+                  setMobilePanelOpen(false);
+                }}
+              />
+              <ToolButton
+                label="Sign"
+                icon={<PenTool size={16} />}
+                active={activeTool === "signature"}
+                onClick={() => {
+                  setTool("signature");
+                  setMobilePanelOpen(true);
+                }}
+              />
+              <ToolButton
+                label="Tick"
+                icon={<CheckSquare size={16} />}
+                active={activeTool === "tick"}
+                onClick={() => {
+                  setTool("tick");
+                  setMobilePanelOpen(false);
+                }}
+              />
+              <ToolButton
+                label="Options"
+                icon={<SlidersHorizontal size={16} />}
+                active={mobilePanelOpen}
+                onClick={() => setMobilePanelOpen(!mobilePanelOpen)}
+              />
+            </div>
           </div>
         </>
       )}

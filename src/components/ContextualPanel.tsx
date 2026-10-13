@@ -37,12 +37,14 @@ type Props = {
   onSetTypedSignature?: (sigText: string) => void;
   onDownload: () => void;
   message: string;
+  mobilePanelOpen?: boolean;
+  onCloseMobilePanel?: () => void;
 };
 
 const swatches = ["#1C2331", "#6366f1", "#ef4444", "#10b981", "#f59e0b"];
 
 export function ContextualPanel(props: Props) {
-  const { activeTool } = props;
+  const { activeTool, mobilePanelOpen, onCloseMobilePanel } = props;
   const [sigMode, setSigMode] = useState<"draw" | "type" | "upload">("draw");
   const [typedSig, setTypedSig] = useState("John Doe");
   const sigCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -98,11 +100,19 @@ export function ContextualPanel(props: Props) {
   };
 
   return (
-    <aside className="context-panel">
+    <aside className={`context-panel ${mobilePanelOpen ? "mobile-panel-open" : ""}`}>
+      <div className="mobile-sheet-handle" onClick={onCloseMobilePanel} />
       <div className="panel-heading">
-        <span className="panel-eyebrow">
-          {activeTool === "pages" ? "DOCUMENT" : "TOOL OPTIONS"}
-        </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span className="panel-eyebrow">
+            {activeTool === "pages" ? "DOCUMENT" : "TOOL OPTIONS"}
+          </span>
+          {onCloseMobilePanel && (
+            <button className="mobile-close-btn" onClick={onCloseMobilePanel}>
+              ✕
+            </button>
+          )}
+        </div>
         <h2>
           {activeTool === "select"
             ? "Select"
